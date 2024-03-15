@@ -25,12 +25,13 @@ class LightAccessory {
     const light = accessory.context.wiserDevice as ILight;
     this._selfDevice = new Light(light);
 
-    this.service.setCharacteristic(platform.Characteristic.Name, light.Name);
-    this.service.setCharacteristic(platform.Characteristic.Manufacturer, 'Schneider - Wiser');
-    this.service.setCharacteristic(platform.Characteristic.Model, device.productType);
-    this.service.setCharacteristic(platform.Characteristic.Identifier, device.productIdentifier);
-    this.service.setCharacteristic(platform.Characteristic.SerialNumber, device.serialNumber ?? '');
-    this.service.setCharacteristic(platform.Characteristic.Version, device.activeFirmwareVersion);
+    accessory.getService(platform.Service.AccessoryInformation)
+      ?.setCharacteristic(platform.Characteristic.Name, light.Name)
+      .setCharacteristic(platform.Characteristic.Manufacturer, 'Schneider - Wiser')
+      .setCharacteristic(platform.Characteristic.Model, device.productType)
+      .setCharacteristic(platform.Characteristic.Model, device.productIdentifier)
+      .setCharacteristic(platform.Characteristic.SerialNumber, device.serialNumber ?? '')
+      .setCharacteristic(platform.Characteristic.Version, device.activeFirmwareVersion);
 
     this._apiClient.cache$?.pipe(
       switchMap((wiserHub) => wiserHub.lights),

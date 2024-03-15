@@ -29,9 +29,9 @@ class ShutterAccessory {
       ?.setCharacteristic(platform.Characteristic.Name, shutter.Name)
       .setCharacteristic(platform.Characteristic.Manufacturer, 'Schneider - Wiser')
       .setCharacteristic(platform.Characteristic.Model, device.productType)
-      .setCharacteristic(platform.Characteristic.Model, device.productIdentifier)
+      .setCharacteristic(platform.Characteristic.Identifier, device.productIdentifier)
       .setCharacteristic(platform.Characteristic.SerialNumber, device.serialNumber ?? '')
-      .setCharacteristic(platform.Characteristic.Version, device.activeFirmwareVersion);
+      .setCharacteristic(platform.Characteristic.FirmwareRevision, device.activeFirmwareVersion);
 
     this._apiClient.cache$?.pipe(
       switchMap((wiserHub) => wiserHub.shutters),

@@ -1,0 +1,21 @@
+{
+  "bridge": {
+    "name": "Homebridge 24A5",
+    "username": "0E:70:60:64:24:A5",
+    "port": 51564,
+    "pin": "175-54-096",
+    "advertiser": "bonjour-hap"
+  },
+  "accessories": [],
+  "platforms": [
+    {
+      "name": "Config",
+      "port": 8581,
+      "platform": "config"
+    },
+    {
+      "name": "WiserHome",
+      "platform": "WiserHome"
+    }
+  ]
+}

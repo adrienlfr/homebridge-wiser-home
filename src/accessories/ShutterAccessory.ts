@@ -3,6 +3,7 @@ import { PlatformAccessory, Service } from 'homebridge';
 import WiserHeatingClient from '../dataSource/wiserHeatingClient';
 import { IShutter, ShutterFactory } from '../dataSource/interface';
 import { Shutter } from '../models';
+import { filter, switchMap } from 'rxjs';
 
 class ShutterAccessory {
   private service: Service;
@@ -21,9 +22,14 @@ class ShutterAccessory {
       accessory.addService(platform.Service.WindowCovering);
 
     const shutter = accessory.context.device as IShutter;
-
     this._selfDevice = new Shutter(shutter);
+
     this.service.setCharacteristic(platform.Characteristic.Name, shutter.Name);
+
+    this._apiClient.cache$?.pipe(
+      switchMap((wiserHub) => wiserHub.shutters),
+      filter<IShutter>((shutter) => shutter.id === this._selfDevice.id),
+    ).subscribe(next => this._selfDevice.update(next));
 
     this._selfDevice.currentLift.subscribe((value) => {
       this.service.getCharacteristic(platform.Characteristic.CurrentPosition)
@@ -54,7 +60,6 @@ class ShutterAccessory {
    */
   async handleCurrentPositionGet() {
     this.platform.log.debug(`[Shutter ${this.accessory.context.device.id}] Triggered GET CurrentPosition`);
-    this.updateDevice();
     return this._selfDevice.currentLift.value;
   }
 
@@ -64,7 +69,6 @@ class ShutterAccessory {
    */
   async handlePositionStateGet() {
     this.platform.log.debug(`[Shutter ${this.accessory.context.device.id}] Triggered GET PositionState`);
-    this.updateDevice();
     return this.convertLiftMovementToPositionState(this._selfDevice.liftMovement.value);
   }
 
@@ -74,7 +78,6 @@ class ShutterAccessory {
    */
   async handleTargetPositionGet() {
     this.platform.log.debug(`[Shutter ${this.accessory.context.device.id}] Triggered GET TargetPosition`);
-    this.updateDevice();
     return this._selfDevice.targetLift.value;
   }
 
@@ -83,22 +86,11 @@ class ShutterAccessory {
    */
   handleTargetPositionSet(value) {
     this.platform.log.debug(`[Shutter ${this.accessory.context.device.id}] Triggered SET TargetPosition: ${value}`);
-    try {
-      const body = {
-        Action: 'LiftTo',
-        Percentage: value,
-      };
-      void this._apiClient.requestAction(ShutterFactory, this.accessory.context.device.id, JSON.stringify(body));
-    } catch (e) {
-      // this.platform.log.error(e.toString());
-    }
-  }
-
-  updateDevice(): void {
-    this._apiClient
-      .getWiserDevice(ShutterFactory, this.accessory.context.device.id)
-      .then((value) => this._selfDevice.update(value))
-      .catch((error) => this.platform.log.error(error));
+    const body = {
+      Action: 'LiftTo',
+      Percentage: value,
+    };
+    void this._apiClient.requestAction(ShutterFactory, this.accessory.context.device.id, JSON.stringify(body));
   }
 
   convertLiftMovementToPositionState(value: string): number {

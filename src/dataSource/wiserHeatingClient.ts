@@ -5,11 +5,9 @@ import { IWiserDevice,
   ShutterFactory,
   LightFactory,
 } from './interface';
-import { ReadableStream, TextDecoderStream } from 'stream/web';
+import { TextDecoderStream } from 'stream/web';
 import { Observable, firstValueFrom, shareReplay, switchMap, timer } from 'rxjs';
 
-
-const REFRESH_INTERVAL = 5000;
 const CACHE_SIZE = 1;
 
 /**
@@ -25,9 +23,10 @@ enum RequestType {
 class WiserHeatingClient {
   private static instance: WiserHeatingClient;
 
-  constructor({endpoint, secretProvider}: WiserHeatingClientProps) {
+  constructor({endpoint, secretProvider, refreshInterval}: WiserHeatingClientProps) {
     this._endpoint = endpoint;
     this._secretProvider = secretProvider;
+    this._refreshInterval = refreshInterval
   }
 
   public static getInstance(
@@ -45,9 +44,9 @@ class WiserHeatingClient {
 
   private _endpoint: string;
   private _secretProvider: SecretProvider;
+  private _refreshInterval: number;
 
-  private _cache$?: Observable<WiserHub>;
-  private _lastUpdateAt?: number;
+  cache$?: Observable<WiserHub>;
 
   async getWiserHubData(): Promise<WiserHub> {
     async function requestWiserHubData(endpoint: string, headers: Headers): Promise<WiserHub> {
@@ -65,11 +64,11 @@ class WiserHeatingClient {
       return WiserHub.fromJson(json);
     }
 
-    if (!this._cache$) {
-      const timer$ = timer(0, REFRESH_INTERVAL);
+    if (!this.cache$) {
+      const timer$ = timer(0, this._refreshInterval);
 
 
-      this._cache$ = timer$.pipe(
+      this.cache$ = timer$.pipe(
         switchMap(async () => {
           const headers = await this._getRequestHeaders();
           return requestWiserHubData(this._endpoint, headers);
@@ -78,12 +77,12 @@ class WiserHeatingClient {
       );
     }
 
-    return await firstValueFrom(this._cache$);
+    return await firstValueFrom(this.cache$);
   }
 
   async getWiserDevice<T extends IWiserDevice>(
     builder: IWiserDeviceBuilder<T>,
-    id: string
+    id: string,
   ): Promise<T> {
     const deviceBuilder = new WiserDeviceBuilder(builder);
     const identifier = deviceBuilder.getIdentifier();
@@ -98,9 +97,7 @@ class WiserHeatingClient {
       case LightFactory.identifier:
         device = wiserHub.lights.find((light) => light.id === Number(id));
         break;
-
     }
-
 
     if (device) {
       return deviceBuilder.build(device);
@@ -144,26 +141,12 @@ class WiserHeatingClient {
 
     return new Headers(meta);
   }
-
-  _checkCacheDate() {
-    if (this._lastUpdateAt && (Date.now() - this._lastUpdateAt) > REFRESH_INTERVAL) {
-      this._cache$ = undefined;
-    }
-  }
-
-  async _streamToText(stream: ReadableStream<Uint8Array>): Promise<string> {
-    let result = '';
-    const stringStream = stream.pipeThrough(new TextDecoderStream());
-    for await (const chunk of stringStream) {
-      result += chunk;
-    }
-    return result;
-  }
 }
 
 interface WiserHeatingClientProps {
   endpoint: string;
   secretProvider: SecretProvider;
+  refreshInterval: number;
 }
 
 export default WiserHeatingClient;

@@ -29,6 +29,7 @@ export class WiserHomeHomebridgePlatform implements DynamicPlatformPlugin {
     this._apiClient = WiserHeatingClient.getInstance({
       endpoint: this.config.ipAddress,
       secretProvider: () => Promise.resolve(this.config.secret),
+      refreshInterval: this.config.refreshInterval,
     });
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
     // Dynamic Platform plugins should only register new accessories after this event was fired,

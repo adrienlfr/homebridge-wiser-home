@@ -93,12 +93,6 @@ export class WiserHomeHomebridgePlatform implements DynamicPlatformPlugin {
         // this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
         } else {
           const wiserDevice = wiserHub.getWiserDevice(device);
-          this.log.debug('shutters:', JSON.stringify(wiserHub.shutters.find((shutter) => {
-            this.log.debug('DeviceId:', shutter.DeviceId);
-            this.log.debug('id:', device.id);
-            return shutter.DeviceId === device.id;
-          })));
-
 
           if (wiserDevice !== undefined) {
           // the accessory does not yet exist, so we need to create it
@@ -109,7 +103,8 @@ export class WiserHomeHomebridgePlatform implements DynamicPlatformPlugin {
 
             // store a copy of the device object in the `accessory.context`
             // the `context` property can be used to store any data about the accessory you may need
-            accessory.context.device = wiserDevice;
+            accessory.context.device = device;
+            accessory.context.wiserDevice = wiserDevice;
 
             // create the accessory handler for the newly create accessory
             // this is imported from `platformAccessory.ts`

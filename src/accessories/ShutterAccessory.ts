@@ -2,7 +2,7 @@ import { WiserHomeHomebridgePlatform } from '../platform';
 import { PlatformAccessory, Service } from 'homebridge';
 import WiserHeatingClient from '../dataSource/wiserHeatingClient';
 import { IShutter, ShutterFactory } from '../dataSource/interface';
-import { Shutter } from '../models';
+import { Device, Shutter } from '../models';
 import { filter, switchMap } from 'rxjs';
 
 class ShutterAccessory {
@@ -21,10 +21,16 @@ class ShutterAccessory {
     this.service = accessory.getService(platform.Service.WindowCovering) ||
       accessory.addService(platform.Service.WindowCovering);
 
-    const shutter = accessory.context.device as IShutter;
+    const device = accessory.context.device as Device;
+    const shutter = accessory.context.wiserDevice as IShutter;
     this._selfDevice = new Shutter(shutter);
 
     this.service.setCharacteristic(platform.Characteristic.Name, shutter.Name);
+    this.service.setCharacteristic(platform.Characteristic.Manufacturer, 'Schneider - Wiser');
+    this.service.setCharacteristic(platform.Characteristic.Model, device.productType);
+    this.service.setCharacteristic(platform.Characteristic.Identifier, device.productIdentifier);
+    this.service.setCharacteristic(platform.Characteristic.SerialNumber, device.serialNumber ?? '');
+    this.service.setCharacteristic(platform.Characteristic.Version, device.activeFirmwareVersion);
 
     this._apiClient.cache$?.pipe(
       switchMap((wiserHub) => wiserHub.shutters),

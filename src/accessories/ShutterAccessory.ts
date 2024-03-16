@@ -25,6 +25,9 @@ class ShutterAccessory {
     const shutter = accessory.context.wiserDevice as IShutter;
     this._selfDevice = new Shutter(shutter);
 
+    this.platform.log.debug(`[device] ${JSON.stringify(device)}`);
+    this.platform.log.debug(`[shutter] ${JSON.stringify(shutter)}`);
+
     accessory.getService(platform.Service.AccessoryInformation)
       ?.setCharacteristic(platform.Characteristic.Name, shutter.Name)
       .setCharacteristic(platform.Characteristic.Manufacturer, 'Schneider - Wiser')
@@ -65,7 +68,7 @@ class ShutterAccessory {
    * Handle requests to get the current value of the "Current Position" characteristic
    */
   async handleCurrentPositionGet() {
-    this.platform.log.debug(`[Shutter ${this.accessory.context.device.id}] Triggered GET CurrentPosition`);
+    this.platform.log.debug(`[Shutter ${this._selfDevice.id}] Triggered GET CurrentPosition`);
     return this._selfDevice.currentLift.value;
   }
 
@@ -74,7 +77,7 @@ class ShutterAccessory {
    * Handle requests to get the current value of the "Position State" characteristic
    */
   async handlePositionStateGet() {
-    this.platform.log.debug(`[Shutter ${this.accessory.context.device.id}] Triggered GET PositionState`);
+    this.platform.log.debug(`[Shutter ${this._selfDevice.id}] Triggered GET PositionState`);
     return this.convertLiftMovementToPositionState(this._selfDevice.liftMovement.value);
   }
 
@@ -83,7 +86,7 @@ class ShutterAccessory {
    * Handle requests to get the current value of the "Target Position" characteristic
    */
   async handleTargetPositionGet() {
-    this.platform.log.debug(`[Shutter ${this.accessory.context.device.id}] Triggered GET TargetPosition`);
+    this.platform.log.debug(`[Shutter ${this._selfDevice.id}] Triggered GET TargetPosition`);
     return this._selfDevice.targetLift.value;
   }
 
@@ -91,12 +94,12 @@ class ShutterAccessory {
    * Handle requests to set the "Target Position" characteristic
    */
   handleTargetPositionSet(value) {
-    this.platform.log.debug(`[Shutter ${this.accessory.context.device.id}] Triggered SET TargetPosition: ${value}`);
+    this.platform.log.debug(`[Shutter ${this._selfDevice.id}] Triggered SET TargetPosition: ${value}`);
     const body = {
       Action: 'LiftTo',
       Percentage: value,
     };
-    void this._apiClient.requestAction(ShutterFactory, this.accessory.context.device.id, JSON.stringify(body));
+    void this._apiClient.requestAction(ShutterFactory, this._selfDevice.id, JSON.stringify(body));
   }
 
   convertLiftMovementToPositionState(value: string): number {

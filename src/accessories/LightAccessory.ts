@@ -60,7 +60,7 @@ class LightAccessory {
    * Handle requests to get the current value of the "On" characteristic
    */
   async handleOnGet() {
-    this.platform.log.debug(`[Light ${this.accessory.context.device.id}] Triggered GET On`);
+    this.platform.log.debug(`[Light ${this._selfDevice.id}] Triggered GET On`);
     return this._selfDevice.currentState.value === 'On';
   }
 
@@ -69,18 +69,18 @@ class LightAccessory {
    */
   async handleOnSet(value) {
     const targetState = value ? 'On': 'Off';
-    this.platform.log.debug(`[Light ${this.accessory.context.device.id}] Triggered SET On: ${targetState}`);
+    this.platform.log.debug(`[Light ${this._selfDevice.id}] Triggered SET On: ${targetState}`);
     const body = {
       State: targetState,
     };
-    void this._apiClient.requestOverride(LightFactory, this.accessory.context.device.id, JSON.stringify(body));
+    void this._apiClient.requestOverride(LightFactory, this._selfDevice.id, JSON.stringify(body));
   }
 
   /**
    * Handle requests to get the current value of the "Brightness" characteristic
    */
   async handleBrightnessGet() {
-    this.platform.log.debug(`[Light ${this.accessory.context.device.id}] Triggered GET Brightness`);
+    this.platform.log.debug(`[Light ${this._selfDevice.id}] Triggered GET Brightness`);
     return this._selfDevice.currentPercentage.value ?? 0;
   }
 
@@ -88,12 +88,12 @@ class LightAccessory {
    * Handle requests to get the current value of the "Brightness" characteristic
    */
   async handleBrightnessSet(value) {
-    this.platform.log.debug(`[Light ${this.accessory.context.device.id}] Triggered SET Brightness: ${value}`);
+    this.platform.log.debug(`[Light ${this._selfDevice.id}] Triggered SET Brightness: ${value}`);
     const body = {
       State: 'On',
       Percentage: value,
     };
-    void this._apiClient.requestOverride(LightFactory, this.accessory.context.device.id, JSON.stringify(body));
+    void this._apiClient.requestOverride(LightFactory, this._selfDevice.id, JSON.stringify(body));
   }
 }
 

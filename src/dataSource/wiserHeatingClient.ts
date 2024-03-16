@@ -26,7 +26,7 @@ class WiserHeatingClient {
   constructor({endpoint, secretProvider, refreshInterval}: WiserHeatingClientProps) {
     this._endpoint = endpoint;
     this._secretProvider = secretProvider;
-    this._refreshInterval = refreshInterval
+    this._refreshInterval = refreshInterval;
   }
 
   public static getInstance(
@@ -106,21 +106,21 @@ class WiserHeatingClient {
     }
   }
 
-  async requestAction<T extends IWiserDevice>(builder: IWiserDeviceBuilder<T>, id: string, body: string): Promise<void> {
+  async requestAction<T extends IWiserDevice>(builder: IWiserDeviceBuilder<T>, id: number, body: string): Promise<void> {
     const deviceBuilder = new WiserDeviceBuilder(builder);
     const identifier = deviceBuilder.getIdentifier();
 
     return this.patchWiserdevice(identifier, RequestType.Action, id, body);
   }
 
-  async requestOverride<T extends IWiserDevice>(builder: IWiserDeviceBuilder<T>, id: string, body: string): Promise<void> {
+  async requestOverride<T extends IWiserDevice>(builder: IWiserDeviceBuilder<T>, id: number, body: string): Promise<void> {
     const deviceBuilder = new WiserDeviceBuilder(builder);
     const identifier = deviceBuilder.getIdentifier();
 
     return this.patchWiserdevice(identifier, RequestType.Override, id, body);
   }
 
-  async patchWiserdevice(identifier: string, requestType: RequestType, id: string, body: string): Promise<void> {
+  async patchWiserdevice(identifier: string, requestType: RequestType, id: number, body: string): Promise<void> {
     const headers = await this._getRequestHeaders();
     await fetch(`http://${this._endpoint}/data/v2/domain/${identifier}/${id}/${requestType}`, {
       method: 'PATCH',

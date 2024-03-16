@@ -29,7 +29,6 @@ class LightAccessory {
       ?.setCharacteristic(platform.Characteristic.Name, light.Name)
       .setCharacteristic(platform.Characteristic.Manufacturer, 'Schneider - Wiser')
       .setCharacteristic(platform.Characteristic.Model, device.productType)
-      .setCharacteristic(platform.Characteristic.Identifier, device.productIdentifier)
       .setCharacteristic(platform.Characteristic.SerialNumber, device.serialNumber ?? '')
       .setCharacteristic(platform.Characteristic.FirmwareRevision, device.activeFirmwareVersion);
 

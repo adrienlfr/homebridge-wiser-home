@@ -6,7 +6,7 @@ import { IWiserDevice,
   LightFactory,
 } from './interface';
 import { TextDecoderStream } from 'stream/web';
-import { Observable, firstValueFrom, shareReplay, switchMap, timer } from 'rxjs';
+import { Observable, firstValueFrom, from, retry, shareReplay, switchMap, timer } from 'rxjs';
 
 const CACHE_SIZE = 1;
 
@@ -122,11 +122,13 @@ class WiserHeatingClient {
 
   async patchWiserdevice(identifier: string, requestType: RequestType, id: number, body: string): Promise<void> {
     const headers = await this._getRequestHeaders();
-    await fetch(`http://${this._endpoint}/data/v2/domain/${identifier}/${id}/${requestType}`, {
+    from(fetch(`http://${this._endpoint}/data/v2/domain/${identifier}/${id}/${requestType}`, {
       method: 'PATCH',
       headers: headers,
       body: body,
-    });
+    })).pipe(
+      retry({ delay: 2000 }),
+    );
   }
 
   async _getRequestHeaders(): Promise<Headers> {

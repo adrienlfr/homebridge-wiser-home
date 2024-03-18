@@ -45,7 +45,7 @@ class LightAccessory {
       .onGet(this.handleOnGet.bind(this))
       .onSet(this.handleOnSet.bind(this));
 
-    if (accessory.context.device.isDimmable) {
+    if (this._selfDevice.isDimmable) {
       this._selfDevice.currentPercentage.subscribe((value) => {
         this.service.getCharacteristic(platform.Characteristic.Brightness)
           .updateValue(value ?? 0);
